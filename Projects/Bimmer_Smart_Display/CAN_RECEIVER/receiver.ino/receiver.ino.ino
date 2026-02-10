@@ -8,10 +8,15 @@
 
 /******************** ESP-NOW DATA ********************/
 typedef struct {
-  int apa;
-  int ulei_p;
-  int ulei_t;
-  int incarcare;
+    int incarcare;
+    int temp_apa;
+    int temp_ulei;
+    int pres_ulei;
+    int lambda;
+    int intake;
+    int rpm;
+    int maf;
+    int map;
 } SensorData;
 
 volatile bool dataNoua = false;
@@ -83,7 +88,17 @@ static void my_disp_flush(lv_disp_drv_t *disp,
 }
 
 /******************** UI OBJECTS ********************/
-lv_obj_t *lblApa, *lblUleiT, *lblUleiP, *lblInc;
+lv_obj_t *incarcare_1;
+lv_obj_t *temp_apa_1;
+lv_obj_t *temp_ulei_1;
+lv_obj_t *pres_ulei_1;
+lv_obj_t *lambda_1;
+lv_obj_t *intake_1;
+lv_obj_t *rpm_1;
+lv_obj_t *maf_1;
+lv_obj_t *map_1;
+
+
 
 /******************** GLOBAL STYLES (FIX CRITICAL) ********************/
 lv_style_t style_title;
@@ -112,26 +127,27 @@ void create_dashboard() {
   lv_color_t orange_value = lv_color_hex(0xFF0000);   // valori
 
   // --- STYLE TITLU ---
-  lv_style_init(&style_title);
-  lv_style_set_text_color(&style_title, orange_title);
-  lv_style_set_text_font(&style_title, &lv_font_montserrat_16);
-  lv_style_set_text_letter_space(&style_value, 1); 
-  lv_style_set_bg_opa(&style_value, LV_OPA_TRANSP); 
-  lv_style_set_border_width(&style_value, 0);
+lv_style_init(&style_title);
+lv_style_set_text_color(&style_title, orange_title);
+lv_style_set_text_font(&style_title, &lv_font_montserrat_16);
+lv_style_set_text_letter_space(&style_title, 1);
+lv_style_set_bg_opa(&style_title, LV_OPA_TRANSP);
+lv_style_set_border_width(&style_title, 0);
+
   
 
   // --- STYLE VALOARE ---
   lv_style_init(&style_value);
   lv_style_set_text_color(&style_value, orange_value);
-  lv_style_set_text_font(&style_value, &lv_font_montserrat_26);
+  lv_style_set_text_font(&style_value, &lv_font_montserrat_28);
   lv_style_set_text_letter_space(&style_value, 1); 
   lv_style_set_bg_opa(&style_value, LV_OPA_TRANSP); 
   lv_style_set_border_width(&style_value, 0);
 
   // --- GRID EXACT CA ÎN DISPLAY ---
   int col1 = 10; 
-  int col2 = 115;
-  int col3 = 220;
+  int col2 = 120;
+  int col3 = 235;
   int row1 = 10;
   int row2 = 100;
   int row3 = 180;
@@ -149,93 +165,93 @@ void create_dashboard() {
   lv_obj_set_pos(t2, col2, row1);
 
   lv_obj_t* t3 = lv_label_create(scr);
-  lv_label_set_text(t3, "RADIATO");
+  lv_label_set_text(t3, "OIL");
   lv_obj_add_style(t3, &style_title, 0);
   lv_obj_set_pos(t3, col3, row1);
 
   // ------------------ ROW 2 ------------------
 
   lv_obj_t* t4 = lv_label_create(scr);
-  lv_label_set_text(t4, "LAMBDA");
+  lv_label_set_text(t4, "OIL PRESS");
   lv_obj_add_style(t4, &style_title, 0);
   lv_obj_set_pos(t4, col1, row2);
 
   lv_obj_t* t5 = lv_label_create(scr);
-  lv_label_set_text(t5, "INTAKE");
+  lv_label_set_text(t5, "LAMBDA");
   lv_obj_add_style(t5, &style_title, 0);
   lv_obj_set_pos(t5, col2, row2);
 
   lv_obj_t* t6 = lv_label_create(scr);
-  lv_label_set_text(t6, "OIL TEMP");
+  lv_label_set_text(t6, "INTAKE");
   lv_obj_add_style(t6, &style_title, 0);
   lv_obj_set_pos(t6, col3, row2);
 
   // ------------------ ROW 3 ------------------
 
   lv_obj_t* t7 = lv_label_create(scr);
-  lv_label_set_text(t7, "RON ROA");
+  lv_label_set_text(t7, "RPM");
   lv_obj_add_style(t7, &style_title, 0);
   lv_obj_set_pos(t7, col1, row3);
 
   lv_obj_t* t8 = lv_label_create(scr);
-  lv_label_set_text(t8, "TPS");
+  lv_label_set_text(t8, "MAF");
   lv_obj_add_style(t8, &style_title, 0);
   lv_obj_set_pos(t8, col2, row3);
 
   lv_obj_t* t9 = lv_label_create(scr);
-  lv_label_set_text(t9, "ENGINE L");
+  lv_label_set_text(t9, "MAP");
   lv_obj_add_style(t9, &style_title, 0);
   lv_obj_set_pos(t9, col3, row3);
 
 // ------------------ VALORI ------------------
 
 // ROW 1
-lv_obj_t* valBattery = lv_label_create(scr);
-lv_label_set_text(valBattery, "--.--");
-lv_obj_add_style(valBattery, &style_value, 0);
-lv_obj_set_pos(valBattery, col1, row1 + 25);
+incarcare_1= lv_label_create(scr);
+lv_label_set_text(incarcare_1, "--.--");
+lv_obj_add_style(incarcare_1, &style_value, 0);
+lv_obj_set_pos(incarcare_1, col1, row1 + 25);
 
-lblApa = lv_label_create(scr);  // COOLANT
-lv_label_set_text(lblApa, "--.--");
-lv_obj_add_style(lblApa, &style_value, 0);
-lv_obj_set_pos(lblApa, col2, row1 + 25);
+temp_apa_1 = lv_label_create(scr);  // COOLANT
+lv_label_set_text(temp_apa_1, "--.--");
+lv_obj_add_style(temp_apa_1, &style_value, 0);
+lv_obj_set_pos(temp_apa_1, col2, row1 + 25);
 
-lblUleiP = lv_label_create(scr); // RADIATOR
-lv_label_set_text(lblUleiP, "--.--");
-lv_obj_add_style(lblUleiP, &style_value, 0);
-lv_obj_set_pos(lblUleiP, col3, row1 + 25);
+temp_ulei_1 = lv_label_create(scr); // RADIATOR
+lv_label_set_text(temp_ulei_1, "--.--");
+lv_obj_add_style(temp_ulei_1, &style_value, 0);
+lv_obj_set_pos(temp_ulei_1, col3, row1 + 25);
 
 // ROW 2
-lv_obj_t* valLambda = lv_label_create(scr);
-lv_label_set_text(valLambda, "--.--");
-lv_obj_add_style(valLambda, &style_value, 0);
-lv_obj_set_pos(valLambda, col1, row2 + 25);
+pres_ulei_1 = lv_label_create(scr);
+lv_label_set_text(pres_ulei_1, "--.--");
+lv_obj_add_style(pres_ulei_1, &style_value, 0);
+lv_obj_set_pos(pres_ulei_1, col1, row2 + 25);
 
-lv_obj_t* valIntake = lv_label_create(scr);
-lv_label_set_text(valIntake, "--.--");
-lv_obj_add_style(valIntake, &style_value, 0);
-lv_obj_set_pos(valIntake, col2, row2 + 25);
+lambda_1 = lv_label_create(scr);
+lv_label_set_text(lambda_1, "--.--");
+lv_obj_add_style(lambda_1, &style_value, 0);
+lv_obj_set_pos(lambda_1, col2, row2 + 25);
 
-lblUleiT = lv_label_create(scr); // OIL TEMP
-lv_label_set_text(lblUleiT, "--.--");
-lv_obj_add_style(lblUleiT, &style_value, 0);
-lv_obj_set_pos(lblUleiT, col3, row2 + 25);
+intake_1 = lv_label_create(scr); // OIL TEMP
+lv_label_set_text(intake_1, "--.--");
+lv_obj_add_style(intake_1, &style_value, 0);
+lv_obj_set_pos(intake_1, col3, row2 + 25);
 
 // ROW 3
-lv_obj_t* valRon = lv_label_create(scr);
-lv_label_set_text(valRon, "--.--");
-lv_obj_add_style(valRon, &style_value, 0);
-lv_obj_set_pos(valRon, col1, row3 + 25);
+rpm_1 = lv_label_create(scr);
+lv_label_set_text(rpm_1, "--.--");
+lv_obj_add_style(rpm_1, &style_value, 0);
+lv_obj_set_pos(rpm_1, col1, row3 + 25);
 
-lv_obj_t* valTps = lv_label_create(scr);
-lv_label_set_text(valTps, "--.--");
-lv_obj_add_style(valTps, &style_value, 0);
-lv_obj_set_pos(valTps, col2, row3 + 25);
+maf_1 = lv_label_create(scr);
+lv_label_set_text(maf_1, "--.--");
+lv_obj_add_style(maf_1, &style_value, 0);
+lv_obj_set_pos(maf_1, col2, row3 + 25);
 
-lv_obj_t* valEngineL = lv_label_create(scr);
-lv_label_set_text(valEngineL, "--.--");
-lv_obj_add_style(valEngineL, &style_value, 0);
-lv_obj_set_pos(valEngineL, col3, row3 + 25);
+map_1 = lv_label_create(scr);
+lv_label_set_text(map_1, "--.--");
+lv_obj_add_style(map_1, &style_value, 0);
+lv_obj_set_pos(map_1, col3, row3 + 25);
 
 }
 
@@ -277,17 +293,33 @@ void loop() {
 
     char buf[16];
 
-    sprintf(buf, "%d C", rxData.apa);
-    lv_label_set_text(lblApa, buf);
-
-    sprintf(buf, "%d C", rxData.ulei_t);
-    lv_label_set_text(lblUleiT, buf);
-
-    sprintf(buf, "%d bar", rxData.ulei_p);
-    lv_label_set_text(lblUleiP, buf);
-
-    sprintf(buf, "%d %%", rxData.incarcare);
-    lv_label_set_text(lblInc, buf);
+    // 1. BATTERY (incarcare) – presupun % 
+    snprintf(buf, sizeof(buf), "%d %%", rxData.incarcare);
+    lv_label_set_text(incarcare_1, buf); 
+    // 2. COOLANT (temp_apa) – °C 
+    snprintf(buf, sizeof(buf), "%d C", rxData.temp_apa); 
+    lv_label_set_text(temp_apa_1, buf); 
+    // 3. OIL TEMP (temp_ulei) – °C 
+    snprintf(buf, sizeof(buf), "%d C", rxData.temp_ulei);
+    lv_label_set_text(temp_ulei_1, buf);
+    // 4. OIL PRESS (pres_ulei) – bar (sau ce unitate ai tu)
+    snprintf(buf, sizeof(buf), "%d", rxData.pres_ulei); 
+    lv_label_set_text(pres_ulei_1, buf);
+    // 5. LAMBDA – de ex. 0.98, 1.02 etc. // dacă o trimiți *1000 pe CAN, o poți împărți aici 
+    snprintf(buf, sizeof(buf), "%d", rxData.lambda);
+    lv_label_set_text(lambda_1, buf); 
+    // 6. INTAKE – de ex. °C sau bar, cum ai definit tu
+    snprintf(buf, sizeof(buf), "%d", rxData.intake);
+    lv_label_set_text(intake_1, buf); 
+    // 7. RPM
+     snprintf(buf, sizeof(buf), "%d", rxData.rpm); 
+     lv_label_set_text(rpm_1, buf); 
+     // 8. MAF 
+     snprintf(buf, sizeof(buf), "%d", rxData.maf);
+      lv_label_set_text(maf_1, buf); 
+      // 9. MAP 
+      snprintf(buf, sizeof(buf), "%d", rxData.map); 
+      lv_label_set_text(map_1, buf);
   }
 
   lv_timer_handler();

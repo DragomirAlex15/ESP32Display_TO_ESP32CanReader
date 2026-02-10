@@ -3,13 +3,17 @@
 #include <esp_now.h>
 
 uint8_t receiverMAC[] = { 0xA8, 0x42, 0xE3, 0xA8, 0xBA, 0x00 };
- 
 
 typedef struct {
-  int apa;
-  int ulei_p;
-  int ulei_t;
-  int incarcare;
+    int incarcare;
+    int temp_apa;
+    int temp_ulei;
+    int pres_ulei;
+    int lambda;
+    int intake;
+    int rpm;
+    int maf;
+    int map;
 } SensorData;
 
 SensorData tx;
@@ -27,8 +31,10 @@ void setup() {
   esp_now_add_peer(&peer);
 
   Serial.println("Sender ESP-NOW gata.");
-  Serial.println("Scrie: apa,ulei_p,ulei_t,incarcare");
-  Serial.println("Ex: 90,4,105,80");
+  Serial.println("Introdu 9 valori separate prin virgula:");
+  Serial.println("incarcare,temp_apa,temp_ulei,pres_ulei,lambda,intake,rpm,maf,map");
+  Serial.println("Exemplu:");
+  Serial.println("80,90,105,3,980,32,2500,18,102");
 }
 
 void loop() {
@@ -36,16 +42,22 @@ void loop() {
     String line = Serial.readStringUntil('\n');
     line.trim();
 
-    if (sscanf(line.c_str(), "%d,%d,%d,%d",
-               &tx.apa,
-               &tx.ulei_p,
-               &tx.ulei_t,
-               &tx.incarcare) == 4) {
+    if (sscanf(line.c_str(), "%d,%d,%d,%d,%d,%d,%d,%d,%d",
+               &tx.incarcare,
+               &tx.temp_apa,
+               &tx.temp_ulei,
+               &tx.pres_ulei,
+               &tx.lambda,
+               &tx.intake,
+               &tx.rpm,
+               &tx.maf,
+               &tx.map) == 9) {
 
       esp_now_send(receiverMAC, (uint8_t*)&tx, sizeof(tx));
       Serial.println("Trimis ✔");
+
     } else {
-      Serial.println("Format gresit!");
+      Serial.println("Format gresit! Ai nevoie de 9 valori separate prin virgula.");
     }
   }
 }
